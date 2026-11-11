@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071b14">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Química Enem">
+<meta name="author" content="Professor Erlon — Química">
+<title>Missão Enem — Química Ambiental</title>
+<style>
+:root{--bg:#071b14;--card:#102a21;--card2:#15362a;--text:#effff7;--muted:#b9d8ca;--accent:#7ee787;--warn:#ffd166;--danger:#ff7b72;--ok:#56d364;--fontScale:100%}
+html{font-size:var(--fontScale)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#06150f,#0b241a);color:var(--text);line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0px)}
+header{padding:calc(28px + env(safe-area-inset-top,0px)) 18px 28px;text-align:center;background:#092018;border-bottom:1px solid #24533f;position:sticky;top:0;z-index:5}
+h1{margin:0 0 6px;font-size:clamp(1.7rem,4vw,2.8rem)} header p{margin:4px;color:var(--muted)}
+.container{max-width:1100px;margin:auto;padding:20px}
+.panel,.card{background:var(--card);border:1px solid #285541;border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 10px 30px #0004}
+.panel h2,.card h2{margin-top:0;color:var(--accent)}
+.notice{background:#2b2511;border-left:5px solid var(--warn);padding:14px;border-radius:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+label{display:block;font-weight:700;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:11px;border-radius:9px;border:1px solid #477764;background:#091c15;color:#fff;font-size:1rem;font-family:inherit}
+input[type=range]{padding:0}
+button{cursor:pointer;border:0;border-radius:9px;padding:11px 15px;font-weight:700;background:var(--accent);color:#062015;margin-top:10px;margin-right:8px;font-size:1rem}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+button.secondary{background:#244c3c;color:#fff}
+.opt{display:block;width:100%;text-align:left;background:#15362a;color:#effff7;border:1px solid #35614f;margin:8px 0}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{background:#123b27;border-color:var(--ok)}.opt.bad{background:#41211f;border-color:var(--danger)}
+.result{margin-top:10px;padding:12px;border-radius:9px}.correct{background:#123b27;border:1px solid var(--ok)}.wrong{background:#41211f;border:1px solid var(--danger)}
+.progress{height:12px;background:#19372b;border-radius:10px;overflow:hidden;margin:10px 0}.bar{height:100%;background:var(--accent);width:0%;transition:.3s}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;text-align:center}
+.stat b{display:block;font-size:1.7rem;color:var(--warn)}
+.tag{display:inline-block;font-size:.8rem;padding:3px 10px;border-radius:20px;background:#244c3c;color:var(--accent);margin-right:6px}
+.small{font-size:.9rem;color:var(--muted)}
+#end{display:none;text-align:center}#end.show{display:block}
+#end h2{color:var(--ok);font-size:2rem}
+#confettiLayer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti-piece{position:absolute;top:-20px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.9}}
+@media (prefers-reduced-motion:reduce){.confetti-piece{display:none}.bar{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧪 Missão Enem: Química Ambiental</h1>
+  <p><strong>Treino de alto nível com gamificação</strong></p>
+  <p>Autoria: <strong style="color:var(--warn)">Professor Erlon — Química</strong></p>
+  <p id="sub"></p>
+</header>
+<div id="confettiLayer"></div>
+<div class="container">
+
+<section class="panel">
+  <h2>🚨 Briefing da missão</h2>
+  <div class="notice">Questões inéditas no estilo Enem: textos-base com situações do dia a dia, riscos e acidentes ambientais em grande escala. Elas não são transcrições de provas anteriores. Cada acerto rende XP, e sequências de acertos dão bônus.</div>
+</section>
+
+<section class="panel">
+  <h2>⚙️ Configuração do treino</h2>
+  <div class="grid">
+    <div><label for="theme">Tema</label><select id="theme"></select></div>
+    <div><label for="qty">Quantidade de questões</label><input id="qty" type="number" min="1" value="10"></div>
+  </div>
+  <label for="fs">Tamanho da fonte</label>
+  <input id="fs" type="range" min="80" max="160" step="5" value="100" oninput="document.documentElement.style.setProperty('--fontScale',this.value+'%')">
+  <button onclick="start()">▶ Iniciar treino</button>
+</section>
+
+<section class="panel" id="statsP" style="display:none">
+  <div class="stats">
+    <div class="stat"><b id="sXp">0</b>XP</div>
+    <div class="stat"><b id="sSt">0</b>Sequência</div>
+    <div class="stat"><b id="sOk">0</b>Acertos</div>
+    <div class="stat"><b id="sLv">Aprendiz</b>Nível</div>
+  </div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+</section>
+
+<div id="quiz"></div>
+
+<section id="end" class="panel">
+  <h2>🎉 Missão cumprida!</h2>
+  <p id="endTxt"></p>
+  <button onclick="start()">↺ Novo treino</button>
+</section>
+
+<section class="panel">
+  <h2>➕ Banco de questões</h2>
+  <p id="bankInfo"></p>
+  <p class="small">Para atualizar o banco, cole uma lista JSON. Em cada questão, <strong>a primeira alternativa é a correta</strong>; o app embaralha as alternativas ao exibir. Questões repetidas são recusadas automaticamente. Temas: ag, pa, ch, ef, co, re, org.</p>
+  <label for="imp">Novas questões (JSON)</label>
+  <textarea id="imp" rows="5" placeholder='[{"t":"ag","k":"Dia a dia","q":"Enunciado...","o":["Correta","B","C","D","E"],"e":"Explicação"}]'></textarea>
+  <button class="secondary" onclick="importQ()">Adicionar ao banco</button>
+  <div id="impRes" class="small" role="status"></div>
+</section>
+<footer class="small" style="text-align:center;padding:25px">© Professor Erlon — Química. Todos os direitos reservados.</footer>
+</div>
+
+<script>
+const T={ag:"Água e esgoto",pa:"Poluição atmosférica",ch:"Chuva ácida",ef:"Efeito estufa",co:"Combustíveis e biocombustíveis",re:"Reciclagem e sustentabilidade",org:"Funções orgânicas no ambiente"};
+const BASE=[
+{t:"ag",k:"Conceito",q:"Em uma estação de tratamento de água, adiciona-se sulfato de alumínio à água bruta antes da decantação. Qual é a função principal dessa etapa?",o:["Formar flocos que aglutinam partículas em suspensão e sedimentam","Eliminar microrganismos por oxidação","Elevar o teor de oxigênio dissolvido","Remover íons cálcio e magnésio","Reduzir a salinidade da água"],e:"Na coagulação/floculação, o Al³⁺ forma hidróxido gelatinoso que prende partículas e facilita a decantação. A desinfecção vem depois, com cloro."},
+{t:"ag",k:"Acidente ambiental",q:"Após o despejo contínuo de esgoto doméstico em um lago, observou-se crescimento intenso de algas e, depois, morte de peixes. A causa direta da mortandade foi:",o:["Queda do oxigênio dissolvido pela decomposição da matéria orgânica","Aumento da incidência de luz no fundo do lago","Excesso de oxigênio produzido pelas algas à noite","Elevação do pH por chuva ácida","Falta de nitrogênio para os peixes"],e:"Nitrato e fosfato do esgoto causam eutrofização. As algas morrem, bactérias aeróbias as decompõem e consomem o O₂ da água."},
+{t:"ag",k:"Conceito",q:"Um rio apresenta alta DBO (demanda bioquímica de oxigênio). Isso indica, principalmente:",o:["Grande quantidade de matéria orgânica biodegradável","Presença exclusiva de metais pesados","Excesso de oxigênio dissolvido","Água com pH neutro e baixa turbidez","Ausência de microrganismos"],e:"DBO mede o O₂ consumido por microrganismos ao degradar matéria orgânica. Quanto maior, mais poluído por esgoto."},
+{t:"ag",k:"Acidente ambiental",q:"O rompimento de uma barragem de rejeitos de mineração liberou lama com metais pesados em um rio. Anos depois, peixes predadores apresentavam as maiores concentrações desses metais. Esse fenômeno é chamado de:",o:["Bioacumulação e biomagnificação","Eutrofização","Inversão térmica","Lixiviação ácida","Floculação"],e:"Metais pesados não são metabolizados nem excretados com facilidade, então se concentram a cada nível da cadeia alimentar."},
+{t:"ag",k:"Dia a dia",q:"Uma família usa poço raso próximo a uma fossa negra. Para avaliar contaminação fecal da água, o melhor indicador é a presença de:",o:["Coliformes termotolerantes (Escherichia coli)","Íons cloreto","Cálcio dissolvido","Bolhas de ar","Cor amarelada apenas"],e:"E. coli vive no intestino humano, e sua presença indica contaminação por esgoto e risco de hepatite A, cólera e diarreias."},
+{t:"pa",k:"Dia a dia",q:"Em uma noite fria, uma família dorme com um aquecedor a gás em quarto fechado e sem ventilação. O risco de intoxicação deve-se a:",o:["CO da combustão incompleta, que se liga à hemoglobina e bloqueia o transporte de O₂","CO₂ que reage com a água do sangue formando ácido sulfúrico","N₂ liberado em grande quantidade","Ozônio produzido na chama","Vapor de água em excesso"],e:"O CO tem afinidade pela hemoglobina cerca de 200 vezes maior que a do O₂, formando carboxiemoglobina."},
+{t:"pa",k:"Conceito",q:"O conversor catalítico de um automóvel reduz a emissão de poluentes ao promover, entre outras, a reação:",o:["2 CO + 2 NO → 2 CO₂ + N₂","CO₂ + H₂O → H₂CO₃","N₂ + O₂ → 2 NO","SO₂ + ½ O₂ → SO₃","C + O₂ → CO"],e:"Catalisadores de Pt, Pd e Rh convertem CO e NO em CO₂ e N₂, bem menos tóxicos."},
+{t:"pa",k:"Dia a dia",q:"No inverno, em grandes cidades, a poluição fica retida perto do solo nas primeiras horas da manhã. Isso ocorre porque:",o:["Uma camada de ar quente sobre o ar frio impede a dispersão vertical dos poluentes","O ar frio sobe e arrasta os poluentes para a estratosfera","O vento intenso concentra os gases","O CO₂ é mais leve que o ar","A chuva ácida se forma só no inverno"],e:"Na inversão térmica o ar frio, mais denso, fica preso embaixo do quente, e a convecção que dispersaria os poluentes cessa."},
+{t:"pa",k:"Acidente ambiental",q:"O Protocolo de Montreal restringiu os CFCs porque esses compostos, ao atingirem a estratosfera:",o:["Liberam radicais cloro que catalisam a decomposição do ozônio","Aumentam a produção de ozônio","Absorvem raios infravermelhos e geram chuva ácida","Reagem com N₂ formando amônia","Neutralizam o CO₂"],e:"A radiação UV quebra o CFC, e o Cl• destrói milhares de moléculas de O₃ em ciclos catalíticos, o que gera o buraco na camada de ozônio."},
+{t:"pa",k:"Acidente ambiental",q:"Após vazamento de um gás tóxico mais denso que o ar em uma fábrica, a orientação mais adequada à população vizinha é:",o:["Buscar locais elevados e se afastar na direção perpendicular ao vento","Descer a andares térreos e porões","Abrir portas e janelas para ventilar","Correr na mesma direção do vento","Permanecer em ruas baixas"],e:"Gases mais densos se acumulam em locais baixos. Locais altos e o deslocamento perpendicular ao vento reduzem a exposição."},
+{t:"ch",k:"Conceito",q:"A água da chuva \"limpa\" tem pH em torno de 5,6, e não 7. Isso se explica pela reação:",o:["CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻","SO₂ + H₂O → H₂SO₄","N₂ + 3 H₂ → 2 NH₃","CaCO₃ → CaO + CO₂","NaCl → Na⁺ + Cl⁻"],e:"O CO₂ atmosférico forma ácido carbônico, fraco. Chuva ácida é a que tem pH inferior a cerca de 5,6."},
+{t:"ch",k:"Conceito",q:"A queima de carvão com enxofre origina chuva ácida. A sequência que forma o ácido sulfúrico é:",o:["S + O₂ → SO₂; 2 SO₂ + O₂ → 2 SO₃; SO₃ + H₂O → H₂SO₄","S + H₂ → H₂S; H₂S → H₂SO₄","C + O₂ → CO₂; CO₂ + H₂O → H₂SO₄","N₂ + O₂ → NO; NO + H₂O → H₂SO₄","SO₂ + CaO → CaSO₃"],e:"O SO₂ é oxidado a SO₃, que reage com a água e forma H₂SO₄, o principal ácido da chuva ácida."},
+{t:"ch",k:"Dia a dia",q:"Estátuas de mármore (CaCO₃) em praças de cidades industriais apresentam corrosão. Ao reagir com H₂SO₄ da chuva ácida, o mármore libera:",o:["CO₂, H₂O e CaSO₄","H₂ e CaO","O₂ e CaS","Somente CaSO₄ sólido","NH₃ e CaCl₂"],e:"CaCO₃ + H₂SO₄ → CaSO₄ + H₂O + CO₂. O gás liberado e o sulfato formado danificam a superfície."},
+{t:"ch",k:"Acidente ambiental",q:"Lagos de regiões afetadas por chuva ácida recebem calcário (CaCO₃) ou cal (CaO). O objetivo é:",o:["Neutralizar o excesso de H⁺ e elevar o pH da água","Aumentar a acidez para eliminar algas","Remover o oxigênio dissolvido","Precipitar todo o CO₂ do ar","Reduzir a temperatura"],e:"A calagem consome H⁺ e recupera o pH, protegendo peixes e anfíbios sensíveis à acidez, embora seja medida paliativa."},
+{t:"ef",k:"Conceito",q:"O metano (CH₄) de aterros e da pecuária preocupa os climatologistas porque, por molécula, em 100 anos:",o:["Retém muito mais calor que o CO₂","Não absorve radiação infravermelha","Destrói o ozônio estratosférico","Forma chuva ácida diretamente","Possui vida infinita na atmosfera"],e:"O potencial de aquecimento do CH₄ é cerca de 28 vezes o do CO₂ em 100 anos, mas ele permanece menos tempo na atmosfera."},
+{t:"ef",k:"Acidente ambiental",q:"O aumento do CO₂ atmosférico também afeta os oceanos, pois a dissolução do gás:",o:["Forma ácido carbônico, reduz o pH e prejudica corais e moluscos de carbonato de cálcio","Eleva o pH e favorece os corais","Aumenta a salinidade apenas","Produz ozônio na superfície","Não altera o equilíbrio químico"],e:"CO₂ + H₂O ⇌ H₂CO₃. Mais H⁺ reduz o íon carbonato disponível para formar conchas e esqueletos (acidificação)."},
+{t:"ef",k:"Acidente ambiental",q:"Queimadas em larga escala na Amazônia contribuem para o aquecimento global principalmente porque:",o:["Liberam CO₂ e reduzem a biomassa que absorveria carbono pela fotossíntese","Aumentam a absorção de CO₂ pelo solo","Diminuem a emissão de metano","Formam ozônio estratosférico","Elevam o albedo e esfriam a região"],e:"A queima emite carbono estocado e elimina o sumidouro natural, o que soma dois efeitos ao efeito estufa."},
+{t:"co",k:"Cálculo",q:"A combustão completa do octano: 2 C₈H₁₈ + 25 O₂ → 16 CO₂ + 18 H₂O. Dados C=12, H=1, O=16, a massa de CO₂ liberada na queima de 114 g de octano é:",o:["352 g","176 g","704 g","228 g","44 g"],e:"114 g de C₈H₁₈ = 1 mol, que produz 8 mol de CO₂, ou 8 × 44 = 352 g."},
+{t:"co",k:"Conceito",q:"O etanol da cana é considerado de balanço de carbono favorável porque:",o:["O CO₂ emitido na queima é em boa parte reabsorvido pela cana em crescimento","Não emite nenhum gás na combustão","É extraído do subsolo, como o petróleo","Sua queima libera apenas vapor de água","Dispensa uso de energia no cultivo"],e:"O carbono do etanol vem da fotossíntese recente, e o ciclo se compensa em parte. Fertilizantes e máquinas ainda geram emissões."},
+{t:"co",k:"Conceito",q:"O biodiesel é produzido por transesterificação. Os produtos dessa reação entre óleo vegetal e álcool, com catalisador, são:",o:["Ésteres (biodiesel) e glicerol","Ácidos graxos e água","Etanol e CO₂","Alcanos e hidrogênio","Sabão e amônia"],e:"Triglicerídeo + 3 álcool → 3 ésteres alquílicos + glicerol. O glicerol é coproduto."},
+{t:"co",k:"Dia a dia",q:"Descartar óleo de cozinha usado no ralo da pia prejudica o ambiente, pois o óleo:",o:["Forma película sobre a água, dificultando a troca de O₂, e pode virar biodiesel ou sabão se coletado","Dissolve-se totalmente e vira nutriente","Reage com a água formando ácido forte","Evapora sem deixar resíduos","Neutraliza o esgoto"],e:"Apolar e menos denso que a água, o óleo forma película e entope redes. A coleta seletiva o transforma em biodiesel, sabão e outros produtos."},
+{t:"co",k:"Acidente ambiental",q:"Em um derramamento de petróleo no mar, forma-se uma mancha na superfície. Isso ocorre porque o petróleo é:",o:["Apolar e menos denso que a água, portanto imiscível e flutuante","Polar e solúvel na água do mar","Mais denso que a água e afunda","Um gás que se dissolve","Um sal que se dissocia"],e:"Hidrocarbonetos são apolares e menos densos. A mancha reduz a luz e a troca gasosa. Barreiras flutuantes e absorventes ajudam na contenção."},
+{t:"re",k:"Conceito",q:"Reciclar uma lata de alumínio economiza grande parte da energia gasta na produção a partir da bauxita, pois evita:",o:["A eletrólise da alumina, processo de alto consumo de energia","A queima do carvão mineral na siderurgia","A fotossíntese","A destilação fracionada","A fermentação"],e:"O alumínio primário exige eletrólise da alumina (Al₂O₃) fundida. O alumínio reciclado precisa apenas ser refundido, com economia próxima de 95%."},
+{t:"re",k:"Dia a dia",q:"Pilhas e baterias descartadas no lixo comum são perigosas porque contêm metais como Pb, Cd e Hg, que podem:",o:["Ser lixiviados pelo chorume e contaminar solo e águas subterrâneas","Virar CO₂ no aterro","Ser totalmente biodegradados em dias","Reagir com o plástico e gerar ozônio","Reduzir a acidez do solo"],e:"Metais pesados não são degradáveis, ficam no ambiente e se bioacumulam. Por isso devem ir a pontos de coleta."},
+{t:"re",k:"Acidente ambiental",q:"Aterros sanitários modernos captam o biogás gerado pela decomposição anaeróbia do lixo orgânico. Essa medida é vantajosa porque:",o:["O metano capturado vira energia e deixa de ir à atmosfera como gás de efeito estufa","O biogás é composto só de O₂","Elimina o chorume totalmente","Transforma plástico em vidro","Evita qualquer decomposição"],e:"A decomposição anaeróbia gera CH₄ e CO₂. Queimar o CH₄ para energia reduz o impacto climático e aproveita o resíduo."}
+];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>String(s).toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g,"");
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let bank=[],extra=[],pool=[],i=0,xp=0,st=0,ok=0;
+function tryAdd(x){
+  if(!x||!T[x.t]||typeof x.q!=="string"||!Array.isArray(x.o)||x.o.length!==5||x.o.some(o=>typeof o!=="string"||!o.trim())||typeof x.e!=="string")return "inv";
+  if(bank.some(b=>norm(b.q)===norm(x.q)))return "dup";
+  bank.push({t:x.t,k:x.k||"Conceito",q:x.q,o:x.o,e:x.e});return "ok";
+}
+function info(){
+  document.getElementById("bankInfo").innerHTML="O banco tem <strong>"+bank.length+"</strong> questões (meta: 100). Cada tema: "+Object.keys(T).map(k=>T[k]+" "+bank.filter(b=>b.t===k).length).join(", ")+".";
+  document.getElementById("sub").textContent=bank.length+" questões • 6 temas • Ensino Médio • preparação para o Enem";
+}
+function importQ(){
+  const r=document.getElementById("impRes");let arr;
+  try{arr=JSON.parse(document.getElementById("imp").value)}catch(e){r.textContent="JSON inválido. Confira vírgulas e aspas.";return}
+  if(!Array.isArray(arr))arr=[arr];
+  const c={ok:0,dup:0,inv:0};
+  arr.forEach(x=>{const s=tryAdd(x);c[s]++;if(s==="ok")extra.push(bank[bank.length-1])});
+  try{localStorage.setItem("qa_extra",JSON.stringify(extra))}catch(e){}
+  r.textContent=c.ok+" adicionadas, "+c.dup+" repetidas recusadas, "+c.inv+" inválidas.";
+  info();fillThemes();
+}
+function fillThemes(){
+  const s=document.getElementById("theme"),v=s.value;
+  s.innerHTML='<option value="all">Todos os temas</option>'+Object.keys(T).map(k=>'<option value="'+k+'">'+T[k]+'</option>').join("");
+  s.value=v||"all";
+}
+function lvl(){return ["Aprendiz","Analista","Perito","Mestre"][Math.min(3,Math.floor(xp/60))]}
+function hud(){
+  sXp.textContent=xp;sSt.textContent=st;sOk.textContent=ok;sLv.textContent=lvl();
+  bar.style.width=(pool.length?i/pool.length*100:0)+"%";
+}
+function start(){
+  const th=theme.value,n=Math.max(1,parseInt(qty.value)||10);
+  pool=shuf(bank.filter(b=>th==="all"||b.t===th)).slice(0,n);
+  i=0;xp=0;st=0;ok=0;
+  end.classList.remove("show");statsP.style.display="block";
+  hud();show();
+}
+function show(){
+  const q=pool[i];
+  if(!q){finish();return}
+  const opts=shuf(q.o.map((t,k)=>({t,r:k===0})));
+  quiz.innerHTML='<section class="card"><span class="tag">'+esc(T[q.t])+'</span><span class="tag">'+esc(q.k)+'</span><h2>Questão '+(i+1)+' de '+pool.length+'</h2><p>'+esc(q.q)+'</p><div id="opts">'+opts.map((o,k)=>'<button class="opt" data-r="'+(o.r?1:0)+'">'+"ABCDE"[k]+') '+esc(o.t)+'</button>').join("")+'</div><div id="fb"></div></section>';
+  quiz.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(b,q));
+  quiz.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function answer(btn,q){
+  const good=btn.dataset.r==="1";
+  quiz.querySelectorAll(".opt").forEach(b=>{b.disabled=true;if(b.dataset.r==="1")b.classList.add("right")});
+  if(good){st++;ok++;xp+=10+Math.min(st-1,5)*2}else{st=0;btn.classList.add("bad")}
+  const f=document.getElementById("fb");
+  f.innerHTML='<div class="result '+(good?"correct":"wrong")+'"><strong>'+(good?"✅ Correto! +"+(10+Math.min(st-1,5)*2)+" XP":"❌ Não foi dessa vez.")+'</strong><br>'+esc(q.e)+'</div><button id="nx">'+(i+1<pool.length?"Próxima questão":"Ver resultado")+'</button>';
+  document.getElementById("nx").onclick=()=>{i++;hud();show()};
+  hud();
+}
+function finish(){
+  quiz.innerHTML="";bar.style.width="100%";
+  const p=Math.round(ok/pool.length*100);
+  endTxt.innerHTML="Você acertou <strong>"+ok+" de "+pool.length+"</strong> ("+p+"%) e somou <strong>"+xp+" XP</strong>, nível "+lvl()+". "+(p>=80?"Desempenho de alto nível!":"Revise as explicações e refaça o treino.");
+  end.classList.add("show");end.scrollIntoView({behavior:"smooth",block:"center"});
+  if(p>=60)confetti();
+}
+function confetti(){
+  const L=document.getElementById("confettiLayer"),C=["#7ee787","#ffd166","#56d364","#9fd7ff","#ff7b72"];
+  for(let k=0;k<70;k++){const e=document.createElement("div");e.className="confetti-piece";const s=6+Math.random()*6;
+    e.style.cssText="width:"+s+"px;height:"+s*.4+"px;left:"+Math.random()*100+"vw;background:"+C[k%5]+";animation-duration:"+(2.5+Math.random()*2)+"s;animation-delay:"+Math.random()*.5+"s";
+    L.appendChild(e);setTimeout(()=>e.remove(),5500)}
+}
+BASE.forEach(tryAdd);
+try{JSON.parse(localStorage.getItem("qa_extra")||"[]").forEach(x=>{if(tryAdd(x)==="ok")extra.push(bank[bank.length-1])})}catch(e){}
+fillThemes();info();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol.startsWith("http")){navigator.serviceWorker.register("sw.js").catch(function(){})}</script>
+</body>
+</html>
